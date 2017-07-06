@@ -44,75 +44,129 @@ app.post('/upload', function(req, res){
   form.parse(req);
 });
 
+var connections = [];
+
+function findIndex(id) {
+	for (i = 0; i < connections.length; ++i)
+		if (connections[i].id == id)
+			return i
+	return -1
+}
 
 io.on('connection', function(socket){
+	// push token in array to manager
+	connections.push(socket);
 	console.log('a user connected');
+	console.log(socket.id)
+
 	socket.on('disconnect', function(){
+		// Get socket index
+		var index = connections.indexOf(socket);
+
+		// Remove the socket from the connections
+        connections.splice(index, 1); 
 		console.log('user disconnected');
 	});
-
-	// unity change color mobile
-	app.get('/changeColor', function(req, res){
-		//console.log(req.query.q);
-		socket.emit('changeColor', req.query.q);
-
-		socket.on('colorChanged', function(data){
-			socket.removeAllListeners('colorChanged');
-			return res.send(data);
-
-		})
-	});
-
-
-
-	// unity get list contact
-	app.get('/getListContact', function(req, res){
-		socket.emit('getListContact')
-
-		socket.on('listContact', function(data){
-			socket.removeAllListeners('listContact');
-			return res.send(data);
-		})
-	});
-
-	// unity send number to call
-	app.get('/call', function(req, res){
-		socket.emit('call', req.query.number)
-	});
-
-	// unity get list image
-	app.get('/getImages', function(req, res){
-		socket.emit('getImages')
-
-		socket.on('imageDone', function(){
-			socket.removeAllListeners('imageDone');
-
-			// get all file name in folder upload
-			fs.readdir('./uploads', (err, files) => {
-				return res.send(files)
-			})
-		})
-	});
-
-	// unity post image
-
-
-	// unity get list music
-	app.get('/getListMusic', function(req, res){
-		socket.emit('getListMusic')
-
-		socket.on('listMusic', function(data){
-			socket.removeAllListeners('listMusic');
-			return res.send(data);
-		})
-	});
-
-	// unity play music with name
-	app.get('/playMusic', function(req, res){
-		socket.emit('playMusic', req.query.name)
-	});
-	
 });
+
+// ================================================
+app.get('/getTokenID', function(req, res){
+	var id = []
+
+	for (i = 0; i < connections.length; ++i)
+		id.push(connections[i].id)
+
+	//console.log(id)
+	res.send(id)
+})
+
+// unity change color mobile
+app.get('/changeColor/:id', function(req, res){
+	//console.log(req.query.q);
+	var id = req.params.id.replace(':', '')
+	var index = findIndex(id)
+	//console.log(id)
+	connections[index].emit('changeColor', req.query.q);
+
+	connections[index].on('colorChanged', function(data){
+		connections[index].removeAllListeners('colorChanged');
+		return res.send(data);
+	})
+});
+
+
+
+// unity get list contact
+app.get('/getListContact/:id', function(req, res){
+	// get id
+	var id = req.params.id.replace(':', '')
+	// find socket to action
+	var index = findIndex(id)
+	connections[index].emit('getListContact')
+
+	connections[index].on('listContact', function(data){
+		connections[index].removeAllListeners('listContact');
+		return res.send(data);
+	})
+});
+
+// unity send number to call
+app.get('/call/:id', function(req, res){
+	// get id
+	var id = req.params.id.replace(':', '')
+	// find socket to action
+	var index = findIndex(id)
+
+	connections[index].emit('call', req.query.number)
+});
+
+// unity get list image
+app.get('/getImages/:id', function(req, res){
+	// get id
+	var id = req.params.id.replace(':', '')
+	// find socket to action
+	var index = findIndex(id)
+
+	connections[index].emit('getImages')
+
+	connections[index].on('imageDone', function(){
+		connections[index].removeAllListeners('imageDone');
+
+		// get all file name in folder upload
+		fs.readdir('./uploads', (err, files) => {
+			return res.send(files)
+		})
+	})
+});
+
+// unity post image
+
+
+// unity get list music
+app.get('/getListMusic/:id', function(req, res){
+	// get id
+	var id = req.params.id.replace(':', '')
+	// find socket to action
+	var index = findIndex(id)
+
+	connections[index].emit('getListMusic')
+
+	connections[index].on('listMusic', function(data){
+		connections[index].removeAllListeners('listMusic');
+		return res.send(data);
+	})
+});
+
+// unity play music with name
+app.get('/playMusic/:id', function(req, res){
+	// get id
+	var id = req.params.id.replace(':', '')
+	// find socket to action
+	var index = findIndex(id)
+
+	connections[index].emit('playMusic', req.query.name)
+});
+///===================================================
 
 http.listen(3000, function(){
 	console.log('listening on *:3000');
