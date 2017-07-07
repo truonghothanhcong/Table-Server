@@ -1,4 +1,5 @@
-var app = require('express')();
+var express = require('express');
+var app = express();
 var http = require('http').Server(app);
 var fs  = require('fs');
 var multer = require('multer');
@@ -12,6 +13,8 @@ var io = require('socket.io')(http);
 // 	res.sendFile(__dirname + '/index.html');
 // });
 
+app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
+
 app.post('/upload', function(req, res){
 
 
@@ -20,6 +23,8 @@ app.post('/upload', function(req, res){
 
   // specify that we want to allow the user to upload multiple files in a single request
   form.multiples = true;
+
+  form.keepExtensions = true;
 
   // store all uploads in the /uploads directory
   form.uploadDir = path.join(__dirname, '/uploads');
