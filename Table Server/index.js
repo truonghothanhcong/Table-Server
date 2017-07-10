@@ -15,8 +15,22 @@ var io = require('socket.io')(http);
 
 app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
 
+const directory = path.join(__dirname, '/uploads');
+
+
+
 app.post('/upload', function(req, res){
 
+  // remove all file in folder
+  fs.readdir(directory, (err, files) => {
+	  if (err) throw error;
+
+	  for (const file of files) {
+	    fs.unlink(path.join(directory, file), err => {
+	      if (err) throw error;
+	    });
+	  }
+	});
 
   // create an incoming form object
   var form = new formidable.IncomingForm();
@@ -24,7 +38,7 @@ app.post('/upload', function(req, res){
   // specify that we want to allow the user to upload multiple files in a single request
   form.multiples = true;
 
-  form.keepExtensions = true;
+  //form.keepExtensions = true;
 
   // store all uploads in the /uploads directory
   form.uploadDir = path.join(__dirname, '/uploads');
@@ -171,6 +185,38 @@ app.get('/playMusic/:id', function(req, res){
 
 	connections[index].emit('playMusic', req.query.name)
 });
+
+app.get('/playContinue/:id', function(req, res){
+	// get id
+	var id = req.params.id.replace(':', '')
+	// find socket to action
+	var index = findIndex(id)
+
+	connections[index].emit('playContinue')
+})
+
+app.get('/pause/:id', function(req, res){
+	// get id
+	var id = req.params.id.replace(':', '')
+	// find socket to action
+	var index = findIndex(id)
+
+	connections[index].emit('pause')
+})
+
+app.get('/downloadImage/:id', function(req, res){
+	// get id
+	var id = req.params.id.replace(':', '')
+	// find socket to action
+	var index = findIndex(id)
+
+	// get all file name in folder upload
+	fs.readdir('./uploads', (err, files) => {
+		console.log('emit download image')
+		console.log(files)
+		connections[index].emit('downloadImage', files[0])
+	})
+})
 ///===================================================
 
 http.listen(3000, function(){
