@@ -7,6 +7,7 @@ var bodyParser = require("body-parser");
 var path = require('path');
 var formidable = require('formidable');
 var io = require('socket.io')(http);
+var numberOfColor = 0;
 
 // // get list
 // app.get('/', function(req, res){
@@ -78,12 +79,47 @@ io.on('connection', function(socket){
 	console.log('a user connected');
 	console.log(socket.id)
 
+	// connections[0] is Unity
+	// if > 0 => mobile connect
+	console.log('1' + connections.length)
+	if (connections.length > 1) {
+		console.log('2' + connections.length)
+		// send change color
+		socket.emit('changeColor', numberOfColor % 3);
+		numberOfColor = numberOfColor + 1
+
+		// success change color and return data is color name
+		socket.on('colorChanged', function(data){
+			console.log('3' + connections.length)
+			connections[index].removeAllListeners('colorChanged');
+			
+			// notify for unity with id of mobile and color name
+			connections[0].emit('haveAMobileConnect', [socket.id, data[0]])
+		})
+
+		// get messsage detect success or not
+		connections[0].on('isDetectSuccess', function(data){
+			if (data[0] == 'false') {
+				socket.emit('resultDetect', ['false'])
+
+				// Get socket index
+				var index = connections.indexOf(socket);
+
+				// Remove the socket from the connections
+		        connections = connections.splice(index, 1); 
+			} else {
+				socket.emit('resultDetect', ['success'])
+			}
+		})
+	}
+
 	socket.on('disconnect', function(){
 		// Get socket index
 		var index = connections.indexOf(socket);
 
 		// Remove the socket from the connections
-        connections.splice(index, 1); 
+        connections = connections.splice(index, 1); 
+		console.log(connections.length)
 		console.log('user disconnected');
 	});
 });
@@ -217,7 +253,9 @@ app.get('/downloadImage/:id', function(req, res){
 		connections[index].emit('downloadImage', files[0])
 	})
 })
-///===================================================
+//========================= SOCKET UNITY ==========================//
+
+
 
 http.listen(3000, function(){
 	console.log('listening on *:3000');
