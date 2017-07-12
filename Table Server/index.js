@@ -86,10 +86,11 @@ io.on('connection', function(socket){
 
 	// connections[0] is Unity
 	// if > 0 => mobile connect
-	console.log('1' + connections.length)
+	//console.log('1' + connections.length)
 
 	socket.on('still', function(){
-		console.log('phone is trying to connect' + connections.length)
+		console.log('on still')
+		//console.log('phone is trying to connect' + connections.length)
 		// send change color
 		socket.emit('changeColor', numberOfColor % 3);
 		numberOfColor = numberOfColor + 1
@@ -97,7 +98,8 @@ io.on('connection', function(socket){
 
 	// success change color and return data is color name
 	socket.on('colorChanged', function(data){
-		console.log('sent colorChange ' + connections.length)
+		console.log('on color colorChanged')
+		//console.log('sent colorChange ' + connections.length)
 		var index = connections.indexOf(socket);
 		connections[index].removeAllListeners('colorChanged');
 		
@@ -262,6 +264,6 @@ app.get('/downloadImage/:id', function(req, res){
 
 
 
-http.listen(3000, function(){
-	console.log('listening on *:3000');
+http.listen(4000, function(){
+	console.log('listening on *:4000');
 });
