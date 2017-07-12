@@ -73,6 +73,11 @@ function findIndex(id) {
 	return -1
 }
 
+app.get('/', function(req, res){
+	res.sendFile(__dirname + '/index.html');
+});
+
+
 io.on('connection', function(socket){
 	// push token in array to manager
 	connections.push(socket);
@@ -84,24 +89,30 @@ io.on('connection', function(socket){
 	console.log('1' + connections.length)
 
 	socket.on('still', function(){
-		console.log('2' + connections.length)
+		console.log('phone is trying to connect' + connections.length)
 		// send change color
 		socket.emit('changeColor', numberOfColor % 3);
 		numberOfColor = numberOfColor + 1
+	})
 
-		// success change color and return data is color name
-		socket.on('colorChanged', function(data){
-			console.log('3' + connections.length)
-			connections[index].removeAllListeners('colorChanged');
-			
-			// notify for unity with id of mobile and color name
-			connections[0].emit('haveAMobileConnect', [socket.id, data[0]])
-		})
+	// success change color and return data is color name
+	socket.on('colorChanged', function(data){
+		console.log('sent colorChange ' + connections.length)
+		var index = connections.indexOf(socket);
+		connections[index].removeAllListeners('colorChanged');
+		
+		// notify for unity with id of mobile and color name
+		connections[0].emit('haveAMobileConnect', [socket.id, data[0]])
+		console.log('id da gui la ', connections[0].id);
+	})
 
-		// get messsage detect success or not
-		connections[0].on('isDetectSuccess', function(data){
-			socket.emit('resultDetect', data)
-		})
+	socket.on('aaa', function(data){
+		console.log('unity da gui: ' + data);
+	});
+
+	// get messsage detect success or not
+	connections[0].on('isDetectSuccess', function(data){
+		socket.emit('resultDetect', data)
 	})
 
 	socket.on('disconnect', function(){
