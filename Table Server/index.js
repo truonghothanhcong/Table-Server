@@ -82,7 +82,8 @@ io.on('connection', function(socket){
 	// connections[0] is Unity
 	// if > 0 => mobile connect
 	console.log('1' + connections.length)
-	if (connections.length > 1) {
+
+	socket.on('still', function(){
 		console.log('2' + connections.length)
 		// send change color
 		socket.emit('changeColor', numberOfColor % 3);
@@ -99,28 +100,21 @@ io.on('connection', function(socket){
 
 		// get messsage detect success or not
 		connections[0].on('isDetectSuccess', function(data){
-			if (data[0] == 'false') {
-				socket.emit('resultDetect', ['false'])
-
-				// Get socket index
-				var index = connections.indexOf(socket);
-
-				// Remove the socket from the connections
-		        connections = connections.splice(index, 1); 
-			} else {
-				socket.emit('resultDetect', ['success'])
-			}
+			socket.emit('resultDetect', data)
 		})
-	}
+	})
 
 	socket.on('disconnect', function(){
 		// Get socket index
 		var index = connections.indexOf(socket);
 
+		if (index >= 1) {
+			console.log('user disconnected' + connections[index].id);
+		}
 		// Remove the socket from the connections
-        connections = connections.splice(index, 1); 
-		console.log(connections.length)
-		console.log('user disconnected');
+        //connections = connections.splice(index, 1); 
+		//console.log(connections.length)
+		//console.log('user disconnected');
 	});
 });
 
