@@ -84,9 +84,10 @@ io.on('connection', function(socket){
 	console.log('a user connected');
 	console.log(socket.id)
 
-	// connections[0] is Unity
-	// if > 0 => mobile connect
-	//console.log('1' + connections.length)
+	socket.on('EMITPLAY', function(data){
+		console.log(data);
+		socket.emit('play', data);
+	})
 
 	socket.on('still', function(){
 		console.log('on still')
@@ -101,21 +102,37 @@ io.on('connection', function(socket){
 		console.log('on color colorChanged')
 		//console.log('sent colorChange ' + connections.length)
 		var index = connections.indexOf(socket);
-		connections[index].removeAllListeners('colorChanged');
+		//connections[index].removeAllListeners('colorChanged');
 		
 		// notify for unity with id of mobile and color name
-		connections[0].emit('haveAMobileConnect', [socket.id, data[0]])
-		console.log('id da gui la ', connections[0].id);
+		connections[0].emit('haveAMobileConnect', {id: connections[index].id, color: data[0]})
+		console.log("mau nhan duoc la: ", data[0]);
+		//console.log('id da gui la ', connections[0].id);
 	})
 
-	socket.on('aaa', function(data){
-		console.log('unity da gui: ' + data);
-	});
-
-	// get messsage detect success or not
-	connections[0].on('isDetectSuccess', function(data){
-		socket.emit('resultDetect', data)
+	socket.on('move', function(data){
+		connections[0].emit('move', {id: socket.id})
+		console.log('phone moved')
 	})
+
+	// // get messsage detect success or not
+	// connections[0].on('isDetectSuccess', function(data){
+	// 	socket.emit('resultDetect', data)
+	// })
+
+	if (connections.length == 1){
+		//unity is connecting, set listener for result
+		socket.on('isDetectSuccess', function(data){
+			console.log(data)
+			var id = data.id;
+			console.log(id);
+			var state = data.state;
+			//console.log(" " + id + " ... " + state);
+
+			var index = findIndex(id);
+			connections[index].emit('connectResult', state);
+		})
+	}
 
 	socket.on('disconnect', function(){
 		// Get socket index
@@ -124,10 +141,6 @@ io.on('connection', function(socket){
 		if (index >= 1) {
 			console.log('user disconnected' + connections[index].id);
 		}
-		// Remove the socket from the connections
-        //connections = connections.splice(index, 1); 
-		//console.log(connections.length)
-		//console.log('user disconnected');
 	});
 });
 
@@ -142,19 +155,19 @@ app.get('/getTokenID', function(req, res){
 	res.send(id)
 })
 
-// unity change color mobile
-app.get('/changeColor/:id', function(req, res){
-	//console.log(req.query.q);
-	var id = req.params.id.replace(':', '')
-	var index = findIndex(id)
-	//console.log(id)
-	connections[index].emit('changeColor', req.query.q);
+// // unity change color mobile
+// app.get('/changeColor/:id', function(req, res){
+// 	//console.log(req.query.q);
+// 	var id = req.params.id.replace(':', '')
+// 	var index = findIndex(id)
+// 	//console.log(id)
+// 	connections[index].emit('changeColor', req.query.q);
 
-	connections[index].on('colorChanged', function(data){
-		connections[index].removeAllListeners('colorChanged');
-		return res.send(data);
-	})
-});
+// 	connections[index].on('colorChanged', function(data){
+// 		connections[index].removeAllListeners('colorChanged');
+// 		return res.send(data);
+// 	})
+// });
 
 
 
@@ -264,6 +277,6 @@ app.get('/downloadImage/:id', function(req, res){
 
 
 
-http.listen(4000, function(){
-	console.log('listening on *:4000');
+http.listen(3000, function(){
+	console.log('listening on *:3000');
 });
