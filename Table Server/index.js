@@ -317,8 +317,10 @@ app.get('/sendMessage/:id', function(req, res) {
 	var id = req.params.id.replace(':', '')
 	// find socket to action
 	var index = findIndex(id)
+	console.log(req.query.mobile);
+	console.log(req.query.message);
 
-	connections[index].emit('sendMessage', [req.query.mobile, req.query.messsage])
+	connections[index].emit('sendMessage', [req.query.mobile, req.query.message])
 })
 
 //========================= SOCKET UNITY ==========================//
