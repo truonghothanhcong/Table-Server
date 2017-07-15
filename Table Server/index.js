@@ -47,6 +47,13 @@ app.post('/upload', function(req, res){
   // every time a file has been uploaded successfully,
   // rename it to it's orignal name
   form.on('file', function(field, file) {
+  	// check *.dat
+  	var i = file.name.lastIndexOf('.')
+  	console.log(i)
+  	if (file.name.substr(i) == '.dat')
+  		file.name = file.name.substr(0, i)
+
+  	console.log('aaaaa ' + file.name)
     fs.rename(file.path, path.join(form.uploadDir, file.name));
   });
 
@@ -306,7 +313,8 @@ app.get('/downloadImage/:id', function(req, res){
 	fs.readdir('./uploads', (err, files) => {
 		console.log('emit download image')
 		console.log(files)
-		connections[index].emit('downloadImage', files[0])
+
+		connections[index].emit('downloadImage', { fileName: files[0] })
 	})
 })
 
