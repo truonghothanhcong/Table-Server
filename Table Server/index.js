@@ -188,6 +188,8 @@ app.get('/getTokenID', function(req, res){
 
 // unity get list contact
 app.get('/getListContact/:id', function(req, res){
+
+	console.log('unity yeu cau lay contact');
 	// get id
 	var id = req.params.id.replace(':', '')
 	// find socket to action
@@ -213,6 +215,7 @@ app.get('/call/:id', function(req, res){
 
 // unity get list image
 app.get('/getImages/:id', function(req, res){
+	console.log('unity yeu cau lay images');
 	// get id
 	var id = req.params.id.replace(':', '')
 	// find socket to action
@@ -227,6 +230,21 @@ app.get('/getImages/:id', function(req, res){
 		fs.readdir('./uploads', (err, files) => {
 			return res.send(files)
 		})
+	})
+});
+
+
+// unity get list image contact
+app.get('/getImagesContact/:id', function(req, res){
+	console.log('unity yeu cau lay images');
+	// get id
+	var id = req.params.id.replace(':', '')
+	// find socket to action
+	var index = findIndex(id)
+
+	// get all file name in folder upload
+	fs.readdir('./uploads', (err, files) => {
+		return res.send(files)
 	})
 });
 
