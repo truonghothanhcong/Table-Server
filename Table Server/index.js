@@ -103,10 +103,15 @@ io.on('connection', function(socket){
 		//console.log('sent colorChange ' + connections.length)
 		var index = connections.indexOf(socket);
 		//connections[index].removeAllListeners('colorChanged');
-		
+		var send;
+		if (data[0] == 'r' || data[0] == 'red') {send = 'red';}
+		if (data[0] == 'g' || data[0] == 'green') {send = 'green';}
+		if (data[0] == 'b' || data[0] == 'blue') {send = 'blue';}
+
+
 		// notify for unity with id of mobile and color name
-		connections[0].emit('haveAMobileConnect', {id: connections[index].id, color: data[0]})
-		console.log("mau nhan duoc la: ", data[0]);
+		connections[0].emit('haveAMobileConnect', {id: connections[index].id, color: send})
+		console.log("mau nhan duoc la:", send);
 		//console.log('id da gui la ', connections[0].id);
 	})
 
@@ -132,6 +137,16 @@ io.on('connection', function(socket){
 			var index = findIndex(id);
 			connections[index].emit('connectResult', state);
 		})
+
+		socket.on('connectBluetooth', function(data){
+			var index = findIndex(data.id);
+			connections[index].emit('connectBluetooth', '');
+		})
+
+		socket.on('disconnectBluetooth', function(data){
+			var index = findIndex(data.id);
+			connections[index].emit('disconnectBluetooth', '');
+		})		
 	}
 
 	socket.on('disconnect', function(){
@@ -181,6 +196,7 @@ app.get('/getListContact/:id', function(req, res){
 
 	connections[index].on('listContact', function(data){
 		connections[index].removeAllListeners('listContact');
+		console.log(data);
 		return res.send(data);
 	})
 });
@@ -228,8 +244,10 @@ app.get('/getListMusic/:id', function(req, res){
 
 	connections[index].on('listMusic', function(data){
 		connections[index].removeAllListeners('listMusic');
+		console.log("du lieu: " + data)
 		return res.send(data);
 	})
+
 });
 
 // unity play music with name
