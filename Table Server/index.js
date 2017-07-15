@@ -309,6 +309,18 @@ app.get('/downloadImage/:id', function(req, res){
 		connections[index].emit('downloadImage', files[0])
 	})
 })
+
+//========================= SEND MESSAGE ==========================//
+
+app.get('/sendMessage/:id', function(req, res) {
+	// get id
+	var id = req.params.id.replace(':', '')
+	// find socket to action
+	var index = findIndex(id)
+
+	connections[index].emit('sendMessage', [req.query.mobile, req.query.messsage])
+})
+
 //========================= SOCKET UNITY ==========================//
 
 
