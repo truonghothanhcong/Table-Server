@@ -314,7 +314,7 @@ app.get('/downloadImage/:id', function(req, res){
 		console.log('emit download image')
 		console.log(files)
 
-		connections[index].emit('downloadImage', { fileName: files[0] })
+		connections[index].emit('downloadImage', files[0]/*{ fileName: files[0] }*/)
 	})
 })
 
